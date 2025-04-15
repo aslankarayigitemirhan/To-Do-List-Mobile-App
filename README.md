@@ -1,5 +1,13 @@
 # To-Do-List-Mobile-App
 
+## Usage of the Docker
+You can start the docker compose file with fallowing code
+``` docker-compose up ```
+
+Docker compose file consist:
+- Backend
+- Postgresql
+
 ## There are two points you should pay attention during build Spring Boot Application:
 
 * After program is run once in "spring.jpa.hibernate.ddl-auto=create" mode, the database will be created (tables and relations between tables, also). **To avoid loosing information in your database, you should change condition with 'update' instead 'create'**. Unless it makes sense, all the information in db whatever you used in terms of db technologies are removed, and created the tables with no data one more time...

@@ -1,5 +1,7 @@
 package com.software.DTO;
 
+import com.software.model.Priority;
+
 import java.time.LocalDate;
 
 public class ToDoDTO {
@@ -8,18 +10,29 @@ public class ToDoDTO {
     private String description;
     private LocalDate startDate;
     private LocalDate expectedEndDate;
-    private UserDTO owner; // User yerine UserDTO kullanıyoruz
-
+    private Priority priority;
+    private UserDTO owner;
     public ToDoDTO() {
     }
 
-    public ToDoDTO(Long todoId, String title, String description, LocalDate startDate, LocalDate expectedEndDate, UserDTO owner) {
+    public ToDoDTO(Long todoId, String title, String description, LocalDate startDate, LocalDate expectedEndDate, Priority priority, UserDTO owner) {
         this.todoId = todoId;
         this.title = title;
         this.description = description;
         this.startDate = startDate;
         this.expectedEndDate = expectedEndDate;
+        this.priority = priority;
         this.owner = owner;
+    }
+
+
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 
     public Long getTodoId() {

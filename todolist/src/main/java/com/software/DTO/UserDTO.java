@@ -1,6 +1,8 @@
 package com.software.DTO;
 
 
+import java.util.List;
+
 public class UserDTO {
     private String name;
     private String surname;
@@ -19,6 +21,13 @@ public class UserDTO {
         this.userId = userId;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public String getName() {
         return name;

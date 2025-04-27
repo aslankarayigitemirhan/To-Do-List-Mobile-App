@@ -46,7 +46,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginUserDto loginUserDto) {
         try {
-            String token = authService.loginUser(loginUserDto.getEmail(), loginUserDto.getPassword());
+            String token = authService.loginUser(loginUserDto.getUsername(), loginUserDto.getPassword());
             LoginResponse loginResponse = new LoginResponse("Bearer " + token, jwtUtil.getEXPIRATION_TIME());
             return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {

@@ -7,16 +7,32 @@ public class ToDoCreationRequestWrapper {
     private String description;
     private LocalDate startTime;
     private LocalDate endTime;
+    private Long listId;
 
 //
     public ToDoCreationRequestWrapper() {
     }
 
-    public ToDoCreationRequestWrapper(String title, String description, LocalDate startTime, LocalDate endTime) {
+    public ToDoCreationRequestWrapper(String title, String description, Long listId) {
+        this.title = title;
+        this.description = description;
+        this.listId = listId;
+    }
+
+    public ToDoCreationRequestWrapper(String title, String description, LocalDate startTime, LocalDate endTime, Long listId) {
         this.title = title;
         this.description = description;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.listId = listId;
+    }
+
+    public Long getListId() {
+        return listId;
+    }
+
+    public void setListId(Long listId) {
+        this.listId = listId;
     }
 
     public String getTitle() {

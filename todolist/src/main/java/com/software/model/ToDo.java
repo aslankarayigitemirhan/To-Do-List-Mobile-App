@@ -13,6 +13,9 @@ public class ToDo {
     @Column(name = "to_do_id")
     private Long todoId;
     @ManyToOne
+    @JoinColumn(name = "list_name", nullable = false)
+    private ListToDo todoBelongingAsList;
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -42,8 +45,9 @@ public class ToDo {
         this.tagPriority = tagPriority;
     }
 
-    public ToDo(User owner, List<Tag> tags, String todotitle, String todoDetailedDescription, LocalDate startingDate, LocalDate expectedEndTime, Priority tagPriority) {
-        this.user = owner;
+    public ToDo(ListToDo todoBelongingAsList, User user, List<Tag> tags, String todotitle, String todoDetailedDescription, LocalDate startingDate, LocalDate expectedEndTime, Priority tagPriority) {
+        this.todoBelongingAsList = todoBelongingAsList;
+        this.user = user;
         this.tags = tags;
         this.todotitle = todotitle;
         this.todoDetailedDescription = todoDetailedDescription;
@@ -60,6 +64,26 @@ public class ToDo {
         this.tagPriority = tagPriority;
         this.expectedEndTime = null;
         this.startingDate = null;
+    }
+
+    public void setTodoId(Long todoId) {
+        this.todoId = todoId;
+    }
+
+    public ListToDo getTodoBelongingAsList() {
+        return todoBelongingAsList;
+    }
+
+    public void setTodoBelongingAsList(ListToDo todoBelongingAsList) {
+        this.todoBelongingAsList = todoBelongingAsList;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Long getTodoId() {

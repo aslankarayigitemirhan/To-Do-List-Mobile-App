@@ -1,10 +1,12 @@
 package com.software.controller;
 
 import com.software.DTO.*;
+import com.software.model.User;
 import com.software.service.AuthService; // Yeni eklenen AuthService
 import com.software.service.UserService;
 import com.software.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,84 +30,59 @@ public class UserController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginUserDto loginUserDto) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String authorizationHeader) {
         try {
-            String token = authService.loginUser(loginUserDto.getEmail(), loginUserDto.getPassword());
-            LoginResponse loginResponse = new LoginResponse("Bearer " + token, jwtUtil.getEXPIRATION_TIME());
-            return ResponseEntity.ok(loginResponse);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-    }
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Authorization header missing or invalid");
+            }
 
-    @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody RegisterRequest registerRequest) {
-        try {
-            UserDTO createdUser = userService.registerUser(
-                    registerRequest.getName(),
-                    registerRequest.getSurname(),
-                    registerRequest.getEmail(),
-                    registerRequest.getUsername(),
-                    registerRequest.getPassword()
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
-    @DeleteMapping("/delete/{username}")
-    public ResponseEntity<String> deleteUser(@PathVariable String username) {
-        try {
-            String result = userService.deleteUser(username);
+            String result = userService.deleteUser(authorizationHeader);
             return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
     }
 
-    @PutMapping("/update-email/{username}")
-    public ResponseEntity<UserDTO> updateEmail(@PathVariable String username, @RequestBody String newEmail) {
+    @PutMapping("/update-email")
+    public ResponseEntity<UserDTO> updateEmail(@RequestHeader("Authorization") String authorizationHeader,@RequestParam String newEmail) {
         try {
-            UserDTO updatedUser = userService.updateEmail(username, newEmail);
+            UserDTO updatedUser = userService.updateEmail(authorizationHeader,newEmail);
             return ResponseEntity.ok(updatedUser);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
-    @PutMapping("/update-password/{username}")
-    public ResponseEntity<String> updatePassword(@PathVariable String username,
+    @PutMapping("/update-password")
+    public ResponseEntity<String> updatePassword(@RequestHeader("Authorization") String authorizationHeader,
                                                  @RequestParam String currentPassword,
                                                  @RequestParam String newPassword) {
         try {
-            String result = userService.updatePassword(username, currentPassword, newPassword);
+            String result = userService.updatePassword(authorizationHeader, currentPassword, newPassword);
             return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    @PutMapping("/update-username/{oldUsername}")
-    public ResponseEntity<String> updateUsername(@PathVariable String oldUsername, @RequestBody String newUsername) {
+    @PutMapping("/update-username")
+    public ResponseEntity<String> updateUsername(@RequestHeader("Authorization") String authorizationHeader, @RequestParam String newUsername) {
         try {
-            String newToken = userService.updateUsername(oldUsername, newUsername);
+            String newToken = userService.updateUsername(authorizationHeader, newUsername);
             return ResponseEntity.ok(newToken);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
-    @PutMapping("/update-name/{username}")
-    public ResponseEntity<UserDTO> updateNameAndSurname(@PathVariable String username,
-                                                        @RequestBody UserDTO updatedInfo) {
+    @PutMapping("/update-name")
+    public ResponseEntity<UserDTO> updateNameAndSurname(@RequestHeader("Authorization") String authorizationHeader,@RequestParam String name, @RequestParam String surname) {
 
         try {
             UserDTO updatedUser = userService.updateNameAndSurname(
-                    username,
-                    updatedInfo.getName(),
-                    updatedInfo.getSurname()
+                    authorizationHeader,name,surname
             );
             return ResponseEntity.ok(updatedUser);
         } catch (RuntimeException e) {
@@ -136,5 +113,13 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred: " + e.getMessage());
         }
+    }
+    @Transactional
+    @GetMapping("/getProfile")
+    public ResponseEntity<UserDTO> getProfile(@RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.replace("Bearer ", ""); // Remove "Bearer " prefix
+        String username = jwtUtil.extractUsername(token);
+        User user = this.userService.getUserByUsername(username);
+        return ResponseEntity.ok(new UserDTO(user.getName(),user.getSurname(),user.getEmail(),user.getUsername(),user.getOwnerId()));
     }
 }

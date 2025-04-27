@@ -1,9 +1,11 @@
 package com.software.service;
 
+import com.software.DTO.ListToDoDTO;
 import com.software.DTO.TagDTO;
 import com.software.DTO.ToDoDTO;
 import com.software.DTO.UserDTO;
 import com.software.model.User;
+import com.software.repository.ListToDoRepository;
 import com.software.repository.UserRepository;
 import com.software.util.JwtUtil;
 import jakarta.transaction.Transactional;
@@ -23,16 +25,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
-
+    private final ListToDoRepository listToDoRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder,ListToDoRepository listToDoRepository) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
+        this.listToDoRepository = listToDoRepository;
     }
 
     @Override
@@ -80,14 +83,24 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public String deleteUser(String username) {
+    public String deleteUser(String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(jwtToken);
+        if (!jwtUtil.validateToken(jwtToken, username)) {
+            throw new RuntimeException("Invalid token");
+        }
         User user = getUserByUsername(username);
         userRepository.delete(user);
         return "User " + username + " deleted successfully.";
     }
 
     @Transactional
-    public UserDTO updateEmail(String username, String newEmail) {
+    public UserDTO updateEmail(String token, String newEmail) {
+        String jwtToken = token.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(jwtToken);
+        if (!jwtUtil.validateToken(jwtToken, username)) {
+            throw new RuntimeException("Invalid token");
+        }
         User user = getUserByUsername(username);
         user.setEmail(newEmail);
         userRepository.save(user);
@@ -95,7 +108,12 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public String updatePassword(String username, String currentPassword, String newPassword) {
+    public String updatePassword(String token, String currentPassword, String newPassword) {
+        String jwtToken = token.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(jwtToken);
+        if (!jwtUtil.validateToken(jwtToken, username)) {
+            throw new RuntimeException("Invalid token");
+        }
         User user = getUserByUsername(username);
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new RuntimeException("Current password is incorrect");
@@ -106,41 +124,73 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public String updateUsername(String oldUsername, String newUsername) {
-        User user = getUserByUsername(oldUsername);
+    public String updateUsername(String token, String newUsername) {
+        String jwtToken = token.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(jwtToken);
+        if (!jwtUtil.validateToken(jwtToken, username)) {
+            throw new RuntimeException("Invalid token");
+        }
+        User user = getUserByUsername(username);
         if (userRepository.findByUsername(newUsername).isPresent()) {
             throw new RuntimeException("New username is already taken");
         }
         user.setUsername(newUsername);
         userRepository.save(user);
-        String newToken = this.jwtUtil.generateToken(newUsername);
+        String newToken =  "Bearer " + this.jwtUtil.generateToken(newUsername);
         return newToken;
     }
 
     @Transactional
-    public UserDTO updateNameAndSurname(String username, String newName, String newSurname) {
+    public UserDTO updateNameAndSurname(String token, String newName, String newSurname) {
+        String jwtToken = token.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(jwtToken);
+        if (!jwtUtil.validateToken(jwtToken, username)) {
+            throw new RuntimeException("Invalid token");
+        }
         User user = getUserByUsername(username);
         user.setName(newName);
         user.setSurname(newSurname);
         userRepository.save(user);
-        return new UserDTO(newName, newSurname, user.getEmail(), user.getUsername(),user.getOwnerId());
+        return new UserDTO(user.getName(), user.getSurname(), user.getEmail(), user.getUsername(),user.getOwnerId());
     }
     @Transactional
     public List<TagDTO> getUserTags(String token) {
-        String username = jwtUtil.extractUsername(token);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-
-        UserDTO userDTO = new UserDTO(user.getName(), user.getSurname(), user.getEmail(), user.getUsername(), user.getOwnerId());
+        String jwtToken = token.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(jwtToken);
+        if (!jwtUtil.validateToken(jwtToken, username)) {
+            throw new RuntimeException("Invalid token");
+        }
+        User user = getUserByUsername(username);
+        UserDTO userDTO = new UserDTO(user.getName(),user.getSurname(),user.getEmail(),user.getUsername(),user.getOwnerId());
 
         return user.getTagsBelonging().stream()
                 .map(tag -> new TagDTO(
                         tag.getTagId(),
                         userDTO,
                         tag.getToDos().stream()
-                                .map(todo -> new ToDoDTO(todo.getTodoId(), todo.getTodotitle(), todo.getTodoDetailedDescription(),todo.getStartingDate(),todo.getExpectedEndTime(),userDTO)) // Adjust ToDoDTO fields
+                                .map(todo -> new ToDoDTO(todo.getTodoId(), todo.getTodotitle(), todo.getTodoDetailedDescription(),todo.getStartingDate(),todo.getExpectedEndTime(),todo.getTagPriority(),userDTO)) // Adjust ToDoDTO fields
                                 .collect(Collectors.toList()),
                         tag.getTagName()
+                ))
+                .collect(Collectors.toList());
+    }
+    @Transactional
+    public List<ListToDoDTO> getListToDoFromToken(String token){
+        String jwtToken = token.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(jwtToken);
+        if (!jwtUtil.validateToken(jwtToken, username)) {
+            throw new RuntimeException("Invalid token");
+        }
+        User user = getUserByUsername(username);
+        UserDTO userDTO = new UserDTO(user.getName(),user.getSurname(),user.getEmail(),user.getUsername(),user.getOwnerId());
+        return user.getListToDo().stream()
+                .map(l -> new ListToDoDTO(
+                        l.getListToDoId(),
+                        l.getListOfToDos().stream()
+                                .map(todo -> new ToDoDTO(todo.getTodoId(), todo.getTodotitle(), todo.getTodoDetailedDescription(),todo.getStartingDate(),todo.getExpectedEndTime(),todo.getTagPriority(),userDTO)) // Adjust ToDoDTO fields
+                                .collect(Collectors.toList()),
+                        l.getListName(),
+                        userDTO
                 ))
                 .collect(Collectors.toList());
     }

@@ -31,8 +31,8 @@ public class TagController {
     }
 
     // Delete Tag
-    @DeleteMapping("/delete/{tagId}")
-    public ResponseEntity<?> deleteTag(@PathVariable Long tagId, @RequestHeader("Authorization") String token) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteTag(@RequestParam Long tagId, @RequestHeader("Authorization") String token) {
         try {
             String result = tagService.deleteTag(tagId, token);
             return ResponseEntity.status(HttpStatus.OK).body(result);
@@ -42,8 +42,8 @@ public class TagController {
     }
 
     // Update Tag Name
-    @PutMapping("/update/{tagId}")
-    public ResponseEntity<?> updateTagName(@PathVariable Long tagId, @RequestParam String newTagName, @RequestHeader("Authorization") String token) {
+    @PutMapping("/update")
+    public ResponseEntity<?> updateTagName(@RequestParam Long tagId, @RequestParam String newTagName, @RequestHeader("Authorization") String token) {
         try {
             TagDTO updatedTag = tagService.updateTagName(tagId, newTagName, token);
             return ResponseEntity.status(HttpStatus.OK).body(updatedTag);

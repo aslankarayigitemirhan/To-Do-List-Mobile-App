@@ -37,6 +37,7 @@ public class TagService {
                 toDo.getTodoDetailedDescription(),
                 toDo.getStartingDate(),
                 toDo.getExpectedEndTime(),
+                toDo.getTagPriority(),
                 userDTO
         );
     }

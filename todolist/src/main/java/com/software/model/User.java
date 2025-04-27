@@ -23,6 +23,8 @@ public class User {
     private String password;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tag> tags;
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ListToDo> listToDo;
 
     public User() {
     }
@@ -33,6 +35,26 @@ public class User {
         this.email = email;
         this.username = username;
         this.password = password;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public List<ListToDo> getListToDo() {
+        return listToDo;
+    }
+
+    public void setListToDo(List<ListToDo> listToDo) {
+        this.listToDo = listToDo;
     }
 
     public Long getOwnerId() {

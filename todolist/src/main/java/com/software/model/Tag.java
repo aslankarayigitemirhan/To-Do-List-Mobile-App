@@ -27,6 +27,10 @@ public class Tag {
         this.tagName = tagName;
     }
 
+    public void setTagId(Long tagId) {
+        this.tagId = tagId;
+    }
+
     public User getUser() {
         return user;
     }

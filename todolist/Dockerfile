@@ -10,4 +10,8 @@ FROM openjdk:23-slim
 WORKDIR /app
 COPY --from=build /app/target/todolist-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh","-c","java \
+  -Dspring.datasource.url=${DB_URL} \
+  -Dspring.datasource.username=${DB_USER} \
+  -Dspring.datasource.password=${DB_PASSWORD} \
+  -jar app.jar"]

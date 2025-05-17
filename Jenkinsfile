@@ -11,30 +11,42 @@ pipeline {
     }
 
     stages {
+        stage('Checkout Code') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']], // Specify your branch
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/aslankarayigitemirhan/To-Do-List-Mobile-App.git',
+                        credentialsId: 'github-jenkins' // Your Jenkins credentials ID
+                    ]]
+                ])
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    // Ensure Dockerfile is in the root of your checkout, or specify path
-                    def customImage = docker.build("${DOCKER_IMAGE_NAME}:${IMAGE_TAG}", "./src/Dockerfile") // Assumes Dockerfile is in the current directory
-                    // You can also specify Dockerfile path: docker.build("my-image", "-f path/to/Dockerfile .")
-                    echo "Docker image built: ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
-                }
+                sh '''
+                cd todolist
+                pwd
+                ls -la
+                docker build -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} .
+                echo "Docker image built: ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
+                '''
             }
         }
 
         stage('Push to Amazon ECR') {
             steps {
+                
                 script {
                     // Construct the full ECR image URI
                     def ecrImageFullName = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
                     def ecrImageLatestFullName = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${DOCKER_IMAGE_NAME}:latest"
 
-
                     // Use the Amazon ECR plugin for login
                     // The 'aws-ecr-credentials' should match the ID you gave your AWS credentials in Jenkins
                     // The AWS_REGION environment variable will be used by the plugin
-                    docker.withRegistry("https://FAKE_URL_BECAUSE_PLUGIN_HANDLES_IT.com", "ecr:${AWS_REGION}:aws-ecr-credentials") {
+                    docker.withRegistry("https://194722421717.dkr.ecr.eu-north-1.amazonaws.com/", "ecr:${AWS_REGION}:194722421717") {
 
                         // Tag the image with the full ECR URI
                         sh "docker tag ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ${ecrImageFullName}"

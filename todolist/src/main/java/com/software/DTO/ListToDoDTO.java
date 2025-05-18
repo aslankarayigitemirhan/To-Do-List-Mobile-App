@@ -3,7 +3,7 @@ package com.software.DTO;
 import java.util.List;
 
 public class ListToDoDTO {
-    private Long listToDoDTOId;
+    private Long listId;
     private List<ToDoDTO> alltodos;
     private String listName;
     private UserDTO userDTO;
@@ -11,19 +11,19 @@ public class ListToDoDTO {
     public ListToDoDTO() {
     }
 
-    public ListToDoDTO(Long listToDoDTOId, List<ToDoDTO> alltodos, String listName, UserDTO userDTO) {
-        this.listToDoDTOId = listToDoDTOId;
+    public ListToDoDTO(Long listId, List<ToDoDTO> alltodos, String listName, UserDTO userDTO) {
+        this.listId = listId;
         this.alltodos = alltodos;
         this.listName = listName;
         this.userDTO = userDTO;
     }
 
-    public Long getListToDoDTOId() {
-        return listToDoDTOId;
+    public Long getListId() {
+        return listId;
     }
 
-    public void setListToDoDTOId(Long listToDoDTOId) {
-        this.listToDoDTOId = listToDoDTOId;
+    public void setListId(Long listToDoDTOId) {
+        this.listId = listToDoDTOId;
     }
 
     public List<ToDoDTO> getAlltodos() {

@@ -1,6 +1,9 @@
 pipeline {
     agent any // Or specify a particular agent with Docker installed
-
+    triggers {
+        // Requires the GitHub Integration Plugin
+        githubPush()
+    }
     environment {
         AWS_ACCOUNT_ID = '194722421717' // Replace with your AWS Account ID
         AWS_REGION = 'eu-north-1'         // Replace with your AWS Region (e.g., us-east-1)
@@ -16,7 +19,7 @@ pipeline {
                 checkout([$class: 'GitSCM',
                     branches: [[name: '*/main']], // Specify your branch
                     userRemoteConfigs: [[
-                        url: 'https://github.com/aslankarayigitemirhan/To-Do-List-Mobile-App.git',
+                        url: 'https://github.com/ByTengaii/Cloud-12Factor-todo.git',
                         credentialsId: 'github-jenkins' // Your Jenkins credentials ID
                     ]]
                 ])
